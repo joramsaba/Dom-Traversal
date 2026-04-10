@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Interactive DOM Traversal</title>
+
+<style>
+
+/* ---------- PAGE STYLE ---------- */
+body{
+    font-family: Arial;
+    text-align:center;
+}
+
+/* Header profile */
+.header{
+    text-align:left;
+    margin:20px;
+}
+
+/* ---------- NODE STYLES ---------- */
+
+.grandparent{
+    background:#e6db7a;
+    padding:20px;
+    margin:20px auto;
+    width:500px;
+}
+
+.parent{
+    background:#9fc3d1;
+    padding:15px;
+    margin:10px;
+}
+
+.child{
+    background:#e6c7c3;
+    padding:10px;
+    margin:10px;
+}
+
+/* Highlight selected node */
+.highlight{
+    border:4px solid red;
+}
+
+/* Buttons */
+button{
+    padding:10px 15px;
+    margin:10px;
+    font-size:14px;
+    cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- ================= HEADER ================= -->
+
+<div class="header">
+<h3>Student Information</h3>
+
+<p><b>Name:</b> YOUR NAME HERE</p>
+<p><b>Sex:</b> </p>
+<p><b>Address:</b> </p>
+<p><b>Course/Year/Section:</b> </p>
+<p><b>School:</b> </p>
+<p><b>Semester & AY:</b> </p>
+<p><b>Subject Code & Title:</b> Event Driven Programming</p>
+<p><b>Instructor:</b> </p>
+
+</div>
+
+<h1>DOM Traversal Interactive</h1>
+
+<!-- ================= DOM TREE ================= -->
+
+<div id="grandparent" class="grandparent">
+
+Grandparent
+
+<div class="parent">
+Parent 1
+
+<div class="child">Child 1</div>
+<div class="child">Child 2</div>
+
+</div>
+
+<div class="parent">
+Parent 2
+
+<div class="child">Child 3</div>
+<div class="child">Child 4</div>
+
+</div>
+
+</div>
+
+<!-- ================= BUTTONS ================= -->
+
+<div>
+
+<button id="down">Traverse Down</button>
+<button id="up">Traverse Up</button>
+<button id="next">Traverse Next Sibling</button>
+<button id="prev">Traverse Previous Sibling</button>
+<button id="add">Add Child</button>
+<button id="delete">Delete Current</button>
+
+</div>
+
+<script>
+
+/* ============================================
+VARIABLES
+============================================ */
+
+let selectedNode = null;
+
+
+/* ============================================
+NODE SELECTION
+============================================ */
+
+// Allow clicking any node to select it
+document.querySelectorAll(".grandparent, .parent, .child")
+.forEach(node => {
+
+    node.addEventListener("click", function(event){
+
+        event.stopPropagation();
+
+        if(selectedNode){
+            selectedNode.classList.remove("highlight");
+        }
+
+        selectedNode = this;
+
+        selectedNode.classList.add("highlight");
+
+    });
+
+});
+
+
+/* ============================================
+TRAVERSE DOWN
+============================================ */
+
+document.getElementById("down").addEventListener("click", function(){
+
+if(!selectedNode) return;
+
+let child = selectedNode.querySelector(".parent, .child");
+
+if(child){
+    selectedNode.classList.remove("highlight");
+    selectedNode = child;
+    selectedNode.classList.add("highlight");
+}
+
+});
+
+
+/* ============================================
+TRAVERSE UP
+============================================ */
+
+document.getElementById("up").addEventListener("click", function(){
+
+if(!selectedNode) return;
+
+let parent = selectedNode.parentElement;
+
+if(parent.classList.contains("grandparent") || parent.classList.contains("parent")){
+
+selectedNode.classList.remove("highlight");
+
+selectedNode = parent;
+
+selectedNode.classList.add("highlight");
+
+}
+
+});
+
+
+/* ============================================
+NEXT SIBLING
+============================================ */
+
+document.getElementById("next").addEventListener("click", function(){
+
+if(!selectedNode) return;
+
+let next = selectedNode.nextElementSibling;
+
+if(next){
+
+selectedNode.classList.remove("highlight");
+
+selectedNode = next;
+
+selectedNode.classList.add("highlight");
+
+}
+
+});
+
+
+/* ============================================
+PREVIOUS SIBLING
+============================================ */
+
+document.getElementById("prev").addEventListener("click", function(){
+
+if(!selectedNode) return;
+
+let prev = selectedNode.previousElementSibling;
+
+if(prev){
+
+selectedNode.classList.remove("highlight");
+
+selectedNode = prev;
+
+selectedNode.classList.add("highlight");
+
+}
+
+});
+
+
+/* ============================================
+ADD CHILD
+============================================ */
+
+document.getElementById("add").addEventListener("click", function(){
+
+if(!selectedNode) return;
+
+
+/* If GRANDPARENT = Add new parent with 2 children */
+
+if(selectedNode.classList.contains("grandparent")){
+
+let parent = document.createElement("div");
+parent.className = "parent";
+parent.innerHTML = "New Parent";
+
+let child1 = document.createElement("div");
+child1.className = "child";
+child1.innerHTML = "New Child";
+
+let child2 = document.createElement("div");
+child2.className = "child";
+child2.innerHTML = "New Child";
+
+parent.appendChild(child1);
+parent.appendChild(child2);
+
+selectedNode.appendChild(parent);
+
+enableSelection(parent);
+enableSelection(child1);
+enableSelection(child2);
+
+}
+
+
+/* If PARENT = Add child */
+
+else if(selectedNode.classList.contains("parent")){
+
+let child = document.createElement("div");
+child.className = "child";
+child.innerHTML = "New Child";
+
+selectedNode.appendChild(child);
+
+enableSelection(child);
+
+}
+
+/* If CHILD = Not allowed */
+
+else{
+
+alert("Cannot add child to a child node.");
+
+}
+
+});
+
+
+/* ============================================
+DELETE CURRENT NODE
+============================================ */
+
+document.getElementById("delete").addEventListener("click", function(){
+
+if(!selectedNode) return;
+
+if(selectedNode.classList.contains("grandparent")){
+
+alert("Grandparent cannot be deleted.");
+
+return;
+
+}
+
+selectedNode.remove();
+
+selectedNode = null;
+
+});
+
+
+/* ============================================
+ENABLE SELECTION FOR NEW NODES
+============================================ */
+
+function enableSelection(node){
+
+node.addEventListener("click", function(event){
+
+event.stopPropagation();
+
+if(selectedNode){
+selectedNode.classList.remove("highlight");
+}
+
+selectedNode = this;
+
+selectedNode.classList.add("highlight");
+
+});
+
+}
+
+</script>
+
+</body>
+</html>
